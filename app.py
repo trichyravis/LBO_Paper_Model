@@ -1,127 +1,73 @@
 
 import streamlit as st
 import pandas as pd
-import numpy as np
-import numpy_financial as npf
 from components.header import header_component
 from components.footer import footer_component
 from components.sidebar import sidebar_component
 
-# 1. Page Configuration
-st.set_page_config(
-    page_title="LBO Model | The Mountain Path",
-    page_icon="🏔️",
-    layout="wide"
-)
+# 1. Setup
+st.set_page_config(page_title="LBO Model | Tabs", layout="wide")
+sidebar_component()
+header_component("LBO Valuation Framework", "Institutional Private Equity Modeling")
 
-# 2. Header Component
-header_component(
-    title="LBO Investment Model", 
-    subtitle="Leveraged Buyout Analysis & Returns Projection"
-)
+# 2. Create Tabs
+tab_home, tab_analysis = st.tabs(["🏠 HOME (Inputs)", "📊 INVESTMENT ANALYSIS"])
 
-# 3. Sidebar Component (Modified to capture LBO inputs)
-# Note: Based on your uploaded sidebar.py styling, we use the same CSS
-# but update the inputs to match your Excel "Transaction Assumptions"
-st.markdown("""
-    <style>
-    [data-testid="stSidebar"] {background-color: #002147 !important;}
-    [data-testid="stSidebar"] .stMarkdown p, [data-testid="stSidebar"] label {color: white !important; font-weight: bold;}
-    div.stButton > button:first-child {
-        background-color: #FFD700 !important; 
-        color: #002147 !important; 
-        font-weight: bold !important; 
-        width: 100%; 
-        border-radius: 8px; 
-        border: none;
-    }
-    </style>
-""", unsafe_allow_html=True)
-
-with st.sidebar:
-    st.header("🏢 Target Financials")
-    ltm_revenue = st.number_input("LTM Revenue ($)", value=3000000, step=100000)
-    ltm_ebitda = st.number_input("LTM EBITDA ($)", value=1500000, step=50000)
+with tab_home:
+    st.subheader("Step 1: Define Transaction & Financial Assumptions")
     
-    st.header("⚙️ Transaction Setup")
-    entry_multiple = st.slider("Entry EV/EBITDA Multiple", 4.0, 15.0, 7.46)
-    debt_pct = st.slider("Debt Financing (%)", 10, 90, 65) / 100
-    fee_pct = st.slider("Transaction Fees (%)", 1.0, 10.0, 5.0) / 100
-    
-    st.header("📈 Growth & Exit")
-    rev_growth = st.slider("Annual Revenue Growth (%)", 0, 25, 10) / 100
-    ebitda_margin = st.slider("EBITDA Margin (%)", 10, 60, 40) / 100
-    exit_multiple = st.slider("Exit EV/EBITDA Multiple", 4.0, 15.0, 8.0)
-    
-    run_btn = st.button("🚀 EXECUTE LBO ANALYSIS")
+    col1, col2 = st.columns(2)
+    with col1:
+        st.markdown("### 🏢 Target Financials")
+        ltm_rev = st.number_input("LTM Revenue ($)", value=3000000, step=100000)
+        ltm_ebitda = st.number_input("LTM EBITDA ($)", value=1500000, step=50000)
+        ebitda_margin = st.slider("Target EBITDA Margin (%)", 10, 60, 40) / 100
 
-# 4. Main Application Logic
-if run_btn:
-    # --- Transaction Summary ---
-    enterprise_value = ltm_ebitda * entry_multiple
-    fees = enterprise_value * fee_pct
-    total_purchase_price = enterprise_value + fees
-    debt_raised = total_purchase_price * debt_pct
-    equity_invested = total_purchase_price - debt_raised
+    with col2:
+        st.markdown("### ⚙️ Transaction Setup")
+        entry_mult = st.slider("Entry EV/EBITDA Multiple", 4.0, 15.0, 7.5)
+        debt_pct = st.slider("Debt Financing (%)", 10, 90, 65) / 100
+        exit_mult = st.slider("Exit EV/EBITDA Multiple", 4.0, 15.0, 8.0)
 
-    # --- 5-Year Financial Projection ---
+    st.markdown("---")
+    st.markdown("### 📈 Operational Projections")
+    growth = st.select_slider("Annual Revenue Growth (%)", options=[0, 5, 10, 15, 20, 25], value=10) / 100
+    
+    if st.button("🚀 CALCULATE & PROCEED TO ANALYSIS"):
+        st.success("Calculations complete! Please click on the 'INVESTMENT ANALYSIS' tab above.")
+
+with tab_analysis:
+    # Logic performed only when moving to this tab
+    ev = ltm_ebitda * entry_mult
+    equity_invested = ev * (1 - debt_pct)
+    
+    # Simple 5-Year Projection
     years = [2025, 2026, 2027, 2028, 2029]
-    projection_data = []
-    current_rev = ltm_revenue
+    rev_proj = [ltm_rev * (1 + growth)**i for i in range(1, 6)]
+    ebitda_proj = [r * ebitda_margin for r in rev_proj]
     
-    # Simple Debt Schedule Assumptions (based on your Excel logic)
-    interest_rate = 0.06
-    mandatory_repay_pct = 0.10
-    current_debt = debt_raised
+    # Exit Calculations
+    exit_value = ebitda_proj[-1] * exit_mult
+    moic = exit_value / (equity_invested + 1e-9) # Prevent div by zero
+    irr = (moic**(1/5)) - 1
 
-    for year in years:
-        current_rev *= (1 + rev_growth)
-        ebitda = current_rev * ebitda_margin
-        interest = current_debt * interest_rate
-        repayment = current_debt * mandatory_repay_pct
-        current_debt -= repayment
-        
-        projection_data.append({
-            "Year": year,
-            "Revenue": current_rev,
-            "EBITDA": ebitda,
-            "Interest Expense": interest,
-            "Debt Repayment": repayment,
-            "Remaining Debt": current_debt
-        })
-
-    df_proj = pd.DataFrame(projection_data)
-
-    # --- Returns Analysis ---
-    final_ebitda = df_proj.iloc[-1]["EBITDA"]
-    exit_value = final_ebitda * exit_multiple
-    debt_remaining = df_proj.iloc[-1]["Remaining Debt"]
-    terminal_equity_value = exit_value - debt_remaining
+    st.subheader("Financial Performance Summary")
     
-    moic = terminal_equity_value / equity_invested
-    irr = (moic ** (1/5)) - 1
+    m1, m2, m3 = st.columns(3)
+    m1.metric("Equity Invested", f"${equity_invested:,.0f}")
+    m2.metric("MOIC", f"{moic:.2f}x")
+    m3.metric("IRR", f"{irr*100:.2f}%")
 
-    # --- Display Results ---
-    st.subheader("Investment Returns")
-    c1, c2, c3, c4 = st.columns(4)
-    c1.metric("Equity Check", f"${equity_invested:,.0f}")
-    c2.metric("Exit Equity", f"${terminal_equity_value:,.0f}")
-    c3.metric("MOIC", f"{moic:.2f}x") # 'x' is now just a text character after the number
-    c4.metric("IRR", f"{irr*100:.2f}%")
-
-    st.subheader("Financial Projections")
-    st.dataframe(df_proj.set_index("Year").style.format("${:,.0f}"))
-
-    st.subheader("Cash Flow Trajectory")
-    st.area_chart(df_proj.set_index("Year")[["Revenue", "EBITDA"]])
-
-else:
-    # Welcome screen before calculation
-    st.info("👈 Please adjust the transaction and operational assumptions in the sidebar and click 'Execute LBO Analysis'.")
+    st.markdown("---")
     
-    # Optional: Display a breakdown of the Sources and Uses based on default inputs
-    st.write("### Preliminary Transaction Structure")
-    st.write(f"At an entry multiple of **{entry_multiple}x**, the Enterprise Value is **${ltm_ebitda * entry_multiple:,.0f}**.")
+    # Visualizations
+    st.write("### Revenue & EBITDA Forecast")
+    chart_df = pd.DataFrame({
+        "Year": years,
+        "Revenue": rev_proj,
+        "EBITDA": ebitda_proj
+    }).set_index("Year")
+    st.line_chart(chart_df)
 
-# 5. Footer Component
+# 3. Footer
 footer_component()
