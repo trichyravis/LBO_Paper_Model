@@ -3,7 +3,8 @@ import streamlit as st
 
 def footer_component():
     """
-    Renders a professional institutional footer with branding and social links.
+    Renders a professional institutional footer with personal branding,
+    social links, and copyright info.
     """
     st.markdown("---")
     st.markdown('''
@@ -27,12 +28,16 @@ def footer_component():
                 font-size: 0.9rem;
                 margin-bottom: 20px;
             }
+            .social-links {
+                margin-bottom: 20px;
+            }
             .social-links a {
                 text-decoration: none;
                 color: #004b8d;
                 font-weight: bold;
                 margin: 0 15px;
                 transition: 0.3s;
+                font-size: 0.9rem;
             }
             .social-links a:hover {
                 color: #FFD700;
@@ -40,7 +45,8 @@ def footer_component():
             .footer-copyright {
                 color: #adb5bd;
                 font-size: 0.8rem;
-                margin-top: 20px;
+                margin-top: 10px;
+                line-height: 1.5;
             }
         </style>
         
