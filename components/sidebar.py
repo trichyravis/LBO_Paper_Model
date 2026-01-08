@@ -2,7 +2,7 @@
 import streamlit as st
 
 def sidebar_component():
-    # Force sidebar header text colors to white
+    # Force sidebar header text colors to white using high-specificity selectors
     st.markdown('''
         <style>
         /* 1. Sidebar background color */
@@ -10,21 +10,20 @@ def sidebar_component():
             background-color: #002147 !important;
         }
         
-        /* 2. Target specific Streamlit Header/Subheader tags in Sidebar */
+        /* 2. Target the headers (Target Financials, Transaction Setup, etc.) */
+        /* This covers the h2 tags specifically created by st.header */
         [data-testid="stSidebar"] h1, 
         [data-testid="stSidebar"] h2, 
-        [data-testid="stSidebar"] h3,
-        [data-testid="stSidebar"] .st-emotion-cache-10trblm, /* Common header class */
-        [data-testid="stWidgetLabel"] p {
-            color: white !important; 
-        }
-
-        /* 3. This is the specific fix for "Target Financials" (h2) */
-        [data-testid="stSidebar"] [data-testid="stHeader"] {
+        [data-testid="stSidebar"] h3 {
             color: white !important;
         }
-        
-        /* 4. Ensure markdown text and labels are also white */
+
+        /* 3. Target the specialized Streamlit header containers */
+        [data-testid="stSidebar"] [data-testid="stHeader"] h2 {
+            color: white !important;
+        }
+
+        /* 4. Target the text inside labels and standard markdown */
         [data-testid="stSidebar"] .stMarkdown p, 
         [data-testid="stSidebar"] label {
             color: white !important;
@@ -45,4 +44,4 @@ def sidebar_component():
     
     with st.sidebar:
         st.header("🏢 Target Financials")
-        # ... the rest of your inputs ...
+        # ... rest of your code
