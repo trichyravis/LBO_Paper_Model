@@ -2,25 +2,36 @@
 import streamlit as st
 
 def sidebar_component():
-    # CSS to force sidebar text colors to white/gold
+    # Force sidebar header text colors to white
     st.markdown('''
         <style>
-        /* Sidebar background color */
+        /* 1. Sidebar background color */
         [data-testid="stSidebar"] {
             background-color: #002147 !important;
         }
         
-        /* Change all sidebar text and headers to white */
-        [data-testid="stSidebar"] .stMarkdown p, 
-        [data-testid="stSidebar"] label, 
+        /* 2. Target specific Streamlit Header/Subheader tags in Sidebar */
         [data-testid="stSidebar"] h1, 
         [data-testid="stSidebar"] h2, 
-        [data-testid="stSidebar"] h3 {
+        [data-testid="stSidebar"] h3,
+        [data-testid="stSidebar"] .st-emotion-cache-10trblm, /* Common header class */
+        [data-testid="stWidgetLabel"] p {
             color: white !important; 
+        }
+
+        /* 3. This is the specific fix for "Target Financials" (h2) */
+        [data-testid="stSidebar"] [data-testid="stHeader"] {
+            color: white !important;
+        }
+        
+        /* 4. Ensure markdown text and labels are also white */
+        [data-testid="stSidebar"] .stMarkdown p, 
+        [data-testid="stSidebar"] label {
+            color: white !important;
             font-weight: bold;
         }
         
-        /* Custom Button Styling */
+        /* 5. Gold Button Styling */
         div.stButton > button:first-child {
             background-color: #FFD700 !important; 
             color: #002147 !important; 
@@ -34,4 +45,4 @@ def sidebar_component():
     
     with st.sidebar:
         st.header("🏢 Target Financials")
-        # ... rest of your inputs ...
+        # ... the rest of your inputs ...
