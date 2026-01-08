@@ -106,7 +106,7 @@ if run_btn:
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Equity Check", f"${equity_invested:,.0f}")
     c2.metric("Exit Equity", f"${terminal_equity_value:,.0f}")
-    c3.metric("MOIC", f"{moic:.2fx}")
+    c3.metric("MOIC", f"{moic:.2f}x") # 'x' is now just a text character after the number
     c4.metric("IRR", f"{irr*100:.2f}%")
 
     st.subheader("Financial Projections")
