@@ -108,7 +108,8 @@ with tab_analysis:
         s_term_eq = s_ev - debt_final
         s_moic = s_term_eq / equity_invested
         s_irr = (s_moic**(1/5)) - 1
-        sens_data.append({"Exit Multiple": f"{m}x", "IRR": f"{s_irr*100:.2f}%", "MOIC": f"{s_moic:.2fx}"})
+        # Correct: The 'x' is outside the curly braces or after the format specifier
+    sens_data.append({"Exit Multiple": f"{m}x", "IRR": f"{s_irr*100:.2f}%", "MOIC": f"{s_moic:.2f}x"})
     
     st.table(pd.DataFrame(sens_data))
 
