@@ -8,8 +8,8 @@ def footer_component():
     """
     st.markdown("---")
     
-    # We wrap the entire HTML block in one st.markdown call
-    st.markdown('''
+    # Define the HTML and CSS as a single string
+    footer_html = '''
         <style>
             .footer-container {
                 text-align: center; 
@@ -51,4 +51,7 @@ def footer_component():
                 Empowering the next generation of Finance Professionals.
             </div>
         </div>
-    ''', unsafe_allow_html=True)
+    '''
+    
+    # Pass the string to markdown with the unsafe_allow_html flag set to True
+    st.markdown(footer_html, unsafe_allow_html=True)
